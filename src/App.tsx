@@ -2,21 +2,16 @@ import { useQuery } from "react-query";
 import { FC, useState } from "react";
 import { Drawer, CircularProgress, Grid, Badge } from "@mui/material";
 import { AddShoppingCart } from "@mui/icons-material/";
-import { Wrapper } from "./App.styles";
+import { Wrapper, StyledButton } from "./App.styles";
 import { getProducts } from "./services/products";
 import Item from "./components/item/Item";
-
-interface IProducts {
-  category: string;
-  description: string;
-  id: number;
-  image: string;
-  price: 109.95;
-  rating: { rate: number; count: number };
-  title: string;
-}
+import Cart from "./components/cart/Cart";
+import { IProducts } from "./types/interfaces";
 
 const App: FC = () => {
+  const [open, setOpen] = useState(false);
+  const [cartItems, setCartItems] = useState([] as IProducts[]);
+
   const { data, isLoading, error } = useQuery<IProducts[]>(
     "products",
     getProducts
@@ -25,17 +20,45 @@ const App: FC = () => {
   if (isLoading) return <CircularProgress />;
   if (error) return <div>{"somthings went wrong..."}</div>;
 
-  const getTotalItems = () => null;
+  const getTotalItems = (items: IProducts[]) =>
+    items.reduce((acc, cur) => acc + cur.amount, 0);
 
   const handleAddToCart = (clickedItem: IProducts) => {
-    console.log(clickedItem);
+    setCartItems((prev) => {
+      const isItemInCart = prev.find((item) => item.id === clickedItem.id);
+
+      if (isItemInCart) {
+        return prev.map((item) =>
+          item.id === clickedItem.id
+            ? { ...item, amount: item.amount + 1 }
+            : item
+        );
+      }
+
+      return [...prev, { ...clickedItem, amount: 1 }];
+    });
   };
 
-  const handleRemoveFormCart = () => null;
+  const handleRemoveFormCart = (id: number) => {
+   
+  };
 
   console.log(data);
   return (
     <Wrapper className="App">
+      <Drawer anchor="right" open={open} onClose={() => setOpen(false)}>
+        <Cart
+          cartItems={cartItems}
+          addToCart={handleAddToCart}
+          removeFromCart={handleRemoveFormCart}
+        />
+      </Drawer>
+      <StyledButton onClick={() => setOpen(true)}>
+        <Badge badgeContent={getTotalItems(cartItems)} color="error">
+          <AddShoppingCart />
+        </Badge>
+      </StyledButton>
+
       <Grid container spacing={3}>
         {data?.map((item, key: number) => (
           <Grid item key={key} xs={12} sm={4}>

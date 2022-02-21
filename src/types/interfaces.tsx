@@ -6,5 +6,5 @@ export interface IProducts {
   price: 109.95;
   rating: { rate: number; count: number };
   title: string;
-  amount?: number;
+  amount?: any;
 }
