@@ -40,7 +40,16 @@ const App: FC = () => {
   };
 
   const handleRemoveFormCart = (id: number) => {
-   
+    setCartItems((prev) => {
+      return prev.reduce((acc, cur) => {
+        if (cur.id === id) {
+          if (cur.amount === 1) return acc;
+          return [...acc, { ...cur, amount: cur.amount - 1 }];
+        } else {
+          return [...acc, cur];
+        }
+      }, [] as IProducts[]);
+    });
   };
 
   console.log(data);
